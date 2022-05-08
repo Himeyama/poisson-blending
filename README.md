@@ -6,15 +6,23 @@ Poisson Image Editing によってシームレスな画像合成を行います�
 - Cargo を実行可能
 
 ## インストール
+以下のようなコマンドを実行していくと、`poisson-image-editing` コマンドがインストールされます。
+
 ```bash
-git clone --depth=1 https://github.com/himeyama/poisson-blending ~
-cd poisson-blending
+git clone --depth=1 https://github.com/himeyama/poisson-blending ~/poisson-blending
+cd ~/poisson-blending/
 cargo install --path .
+```
+
+## アンインストール
+```bash
+cargo uninstall poisson-image-editing
 ```
 
 ## デモンストレーション
 ```bash
 cd ~/poisson-blending/docs/images
+rm -f output.png
 poisson-image-editing
 ```
 
