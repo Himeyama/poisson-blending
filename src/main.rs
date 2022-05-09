@@ -19,7 +19,7 @@ fn image_position(info: &png::OutputInfo, row: u32, column: u32) -> Option<usize
     Some((info.width * row * channel + column * channel) as usize)
 }
 
-fn poisson_image_editing(tgt: &str, src: &str, dst: &str, repeat: i32){
+fn poisson_image_editing(tgt: &str, src: &str, dst: &str, repeat: i32, verbose: bool){
     let fs: std::fs::File = std::fs::File::open(tgt).unwrap();
     let decoder: png::Decoder<std::fs::File> = png::Decoder::new(fs);
     let mut reader: png::Reader<std::fs::File> = decoder.read_info().unwrap();
@@ -41,7 +41,14 @@ fn poisson_image_editing(tgt: &str, src: &str, dst: &str, repeat: i32){
         src[i] = buf_src[i] as f64;
     }
     
-    for _n in 1..(repeat){
+    if verbose{
+        println!("計算開始");
+    }
+
+    for n in 1..(repeat + 1){
+        if verbose{
+            println!("ループ {} 回目", n);
+        }
         for i in 1..(info.height - 1){
             for j in 1..(info.width - 1){
                 let p: usize = image_position(&info, i, j).unwrap();
@@ -63,6 +70,10 @@ fn poisson_image_editing(tgt: &str, src: &str, dst: &str, repeat: i32){
         }
     }
 
+    if verbose{
+        println!("計算終了");
+    }
+
     let mut out_buf: Vec<u8> = vec![0; tgt.capacity()];
     for i in 0..buf_src.capacity(){
         out_buf[i] = tgt[i] as u8;
@@ -78,11 +89,75 @@ fn poisson_image_editing(tgt: &str, src: &str, dst: &str, repeat: i32){
     writer.write_image_data(&out_buf).unwrap();
 }
 
+fn print_usage(program: &str, opts: getopts::Options){
+    print!("{}", opts.usage(
+        &format!("使用法: {} [オプション]", program)
+    ));
+}
+
 fn main() {
+    let mut target: String = "target.png".to_string();
+    let mut source: String = "source.png".to_string();
+    let mut output: String = "output.png".to_string();
+    let mut repeat: i32 = 10;
+    let mut verbose: bool = false;
+
+    let args: Vec<String> = std::env::args().collect();
+    let program: String = args[0].clone();
+    let mut opts = getopts::Options::new();
+    opts.optopt("t", "target", "ターゲット画像のファイル名 (*.png)", "TARGET");
+    opts.optopt("s", "source", "ソース画像のファイル名 (*.png)", "SOURCE");
+    opts.optopt("o", "output", "出力するファイル名 (*.png)", "FILENAME");
+    opts.optopt("r", "repeat", "繰り返し回数", "NUMBER");
+    opts.optflag("", "verbose", "詳細を表示"); 
+    opts.optflag("v", "version", "バージョンを表示"); 
+    opts.optflag("h", "help", "ヘルプを表示");
+
+    let matches = opts.parse(&args[1..]).unwrap();
+    if matches.opt_present("h"){
+        print_usage(&program, opts);
+        return;
+    }
+    if matches.opt_present("v"){
+        println!("poisson-image-editing バージョン \x1b[36m0.1.0\x1b[0m");
+        return;
+    }
+    if matches.opt_present("verbose"){
+        verbose = true;
+    }
+
+    if matches.opt_present("o"){
+        output = matches.opt_str("o").unwrap();
+    }
+    if matches.opt_present("t"){
+        target = matches.opt_str("t").unwrap();
+    }
+    if matches.opt_present("s"){
+        source = matches.opt_str("s").unwrap();
+    }
+    if matches.opt_present("r"){
+        repeat = matches.opt_str("r").unwrap().parse().unwrap();
+    }
+    
+    if !std::path::Path::new(&target).exists(){
+        println!("ターゲット画像 {} が存在しません。", target);
+        std::process::exit(1);
+    }
+
+    if !std::path::Path::new(&source).exists(){
+        println!("ソース画像 {} が存在しません。", source);
+        std::process::exit(1);
+    }
+
+    println!("ターゲット画像: {}", target);
+    println!("    ソース画像: {}", source);
+    println!("出力ファイル名: {}", output);
+
     poisson_image_editing(
-        "target.png",
-        "source.png",
-        "output.png",
-        10
+        &target,
+        &source,
+        &output,
+        repeat,
+        verbose
     );
 }

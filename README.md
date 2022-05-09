@@ -27,7 +27,9 @@ poisson-image-editing
 ```
 
 ## 仕様
-`target.png` と `source.png` から `output.png` を合成します。(ファイル名は指定できません。)
+ターゲット画像 `target.png` と ソース画像 `source.png` から `output.png` を合成します。
+
+**ターゲット画像及びソース画像のサイズ(高さ及び幅)は同じである必要があります。**
 
 - target.png  
   ![docs/images/target.png](docs/images/target.png)
@@ -36,7 +38,16 @@ poisson-image-editing
 - output.png  
   ![docs/images/output.png](docs/images/output.png)
 
-合成の計算回数は 10 回です。(回数は指定できません。)
+### オプション
+短いオプション|長いオプション|説明|
+|:--:|:--:|:--:|
+|-t TARGET|--target TARGET|ターゲット画像を指定します。デフォルトは `target.png` です。|
+|-s SOURCE|--srouce SOURCE|ソース画像を指定します。デフォルトは `source.png` です。|
+|-o FILENAME|--output FILENAME|出力画像を指定します。デフォルトは `output.png` です。|
+|-r NUMBER|--repeat NUMBER|繰り返し回数を指定します。デフォルトは `10` です。|
+||--verbose|詳細を表示します。|
+|-v|--version|バージョンを表示します。|
+|-h|--help|使用法を表示します。|
 
 ## 参考
 - http://opencv.jp/opencv2-x-samples/poisson-blending/
